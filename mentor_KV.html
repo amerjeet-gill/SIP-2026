@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIP 2026 — Team KV | Daily Input</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --border: #d1dce8;
+    --accent: #e85d04;
+    --accent2: #f77f00;
+    --header-bg: #1a3a5c;
+    --header-text: #ffffff;
+    --text: #1e2d3d;
+    --muted: #5a7290;
+    --success: #15803d;
+    --success-bg: #dcfce7;
+    --danger: #b91c1c;
+    --danger-bg: #fee2e2;
+    --row-hover: #fff7f0;
+    --input-bg: #f8fafc;
+    --th-bg: #eef3f8;
+    --chip-bg: #fff3eb;
+    --chip-border: #fcd5b0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+  header {
+    background: var(--header-bg);
+    border-bottom: 4px solid var(--accent);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(26,58,92,0.18);
+  }
+  .header-left { display: flex; flex-direction: column; }
+  .prog-label { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 3px; color: #a8c5e0; }
+  .mentor-name { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 2px; line-height: 1; color: #fff; }
+  .mentor-name span { color: #ffb347; }
+  .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .date-display { font-size: 12px; color: #a8c5e0; font-weight: 400; }
+  .sync-status { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; }
+  .sync-ok { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+  .sync-err { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .sync-loading { background: #fff3eb; color: var(--accent); border: 1px solid #fcd5b0; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+
+  .setup-banner {
+    background: #fff8f0;
+    border: 1.5px solid #fcd5b0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .setup-banner strong { color: var(--accent); }
+  .setup-banner code { background: #fff3eb; color: var(--accent); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  @media (max-width: 600px) { .config-grid { grid-template-columns: 1fr; } }
+  .config-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; }
+  .config-input {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 8px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    width: 100%;
+    margin-top: 4px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .config-input:focus { border-color: var(--accent); }
+
+  .date-bar {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .date-bar label { font-size: 13px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; white-space: nowrap; }
+  .date-bar input[type="date"] {
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 7px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .date-bar input[type="date"]:focus { border-color: var(--accent); }
+  .date-note { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  .table-wrap {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  .table-header {
+    padding: 14px 20px;
+    border-bottom: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(90deg, #fff8f0, #ffffff);
+  }
+  .table-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1.5px; color: var(--accent); }
+  .row-count { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  .overflow-x { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 800px; }
+  thead th {
+    background: var(--th-bg);
+    padding: 10px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1.5px solid var(--border);
+    white-space: nowrap;
+    text-align: center;
+  }
+  thead th:first-child, thead th:nth-child(2), thead th:nth-child(3), thead th:nth-child(4) { text-align: left; }
+  tbody tr { transition: background 0.15s; border-bottom: 1px solid #e8eef4; }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td { padding: 6px 8px; vertical-align: middle; }
+  td.row-num { font-size: 12px; color: var(--muted); text-align: center; width: 36px; font-weight: 600; }
+  td.join-date { width: 130px; }
+
+  input.cell-input {
+    background: var(--input-bg);
+    border: 1.5px solid #e2eaf2;
+    border-radius: 6px;
+    color: var(--text);
+    padding: 6px 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  input.cell-input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(232,93,4,0.08); }
+  input.cell-input.code { font-weight: 700; color: var(--accent); }
+
+  select.att-select {
+    background: var(--input-bg);
+    border: 1.5px solid #e2eaf2;
+    border-radius: 6px;
+    color: var(--text);
+    padding: 6px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: none;
+    text-align: center;
+  }
+  select.att-select:focus { border-color: var(--accent); }
+  select.att-select.present { color: var(--success); background: var(--success-bg); border-color: #86efac; }
+  select.att-select.absent { color: var(--danger); background: var(--danger-bg); border-color: #fca5a5; }
+
+  input.num-input {
+    background: var(--input-bg);
+    border: 1.5px solid #e2eaf2;
+    border-radius: 6px;
+    color: var(--text);
+    padding: 6px 4px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    width: 52px;
+    outline: none;
+    text-align: center;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+  input.num-input::-webkit-outer-spin-button,
+  input.num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input.num-input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(232,93,4,0.08); }
+
+  .total-cell { font-weight: 800; font-size: 14px; color: var(--accent); text-align: center; min-width: 44px; }
+
+  .btn-add-row {
+    background: none;
+    border: 1.5px dashed var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-add-row:hover { border-color: var(--accent); color: var(--accent); background: #fff8f0; }
+
+  .bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .summary-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    background: var(--chip-bg);
+    border: 1.5px solid var(--chip-border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .chip span { color: var(--text); font-weight: 800; margin-left: 4px; }
+
+  .btn-submit {
+    background: linear-gradient(135deg, var(--accent), #c94b02);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 32px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(232,93,4,0.35);
+    min-width: 180px;
+  }
+  .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,93,4,0.45); }
+  .btn-submit:active { transform: translateY(0); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 14px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    max-width: 320px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--success-bg); border: 1.5px solid #86efac; color: var(--success); }
+  .toast.error { background: var(--danger-bg); border: 1.5px solid #fca5a5; color: var(--danger); }
+
+  @media (max-width: 768px) {
+    .mentor-name { font-size: 22px; }
+    .container { padding: 14px 10px; }
+    .btn-submit { width: 100%; }
+    .bottom-bar { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <span class="prog-label">SIP 2026 · TOI RMD SUMMER INTERNSHIP</span>
+    <div class="mentor-name">TEAM <span id="teamNameHeader">KV</span></div>
+  </div>
+  <div class="header-right">
+    <span class="date-display" id="todayDisplay"></span>
+    <span class="sync-status sync-loading" id="syncStatus">● Connecting...</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="setup-banner" id="setupBanner">
+    <strong>⚙️ One-time Setup Required</strong> — Enter your Google Apps Script Web App URL below to connect this form to Google Sheets.<br>
+    After deploying your Apps Script (see setup guide), paste the URL here. It will be saved in your browser.
+    <div class="config-grid">
+      <div>
+        <div class="config-label">Apps Script Web App URL</div>
+        <input class="config-input" id="scriptUrlInput" type="url" placeholder="https://script.google.com/macros/s/...../exec">
+      </div>
+      <div>
+        <div class="config-label">Google Sheet ID</div>
+        <input class="config-input" id="sheetIdInput" type="text" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
+      </div>
+    </div>
+    <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+      <button onclick="saveConfig()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 18px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;font-weight:700;">Save & Connect</button>
+      <button onclick="testConnection()" style="background:#fff;color:var(--muted);border:1.5px solid var(--border);border-radius:6px;padding:7px 18px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Test Connection</button>
+    </div>
+  </div>
+
+  <div class="date-bar">
+    <label>📅 ENTRY DATE</label>
+    <input type="date" id="entryDate">
+    <span class="date-note">All rows below will be submitted for this date</span>
+    <button onclick="loadExistingEntries()" style="background:#fff;border:1.5px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;font-weight:600;" id="loadBtn">↻ Load Existing</button>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">Daily Intern Entry</span>
+      <span class="row-count" id="rowCountLabel">0 interns</span>
+    </div>
+    <div class="overflow-x">
+      <table id="entryTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Joining Date</th>
+            <th>Intern Code</th>
+            <th>Name</th>
+            <th>Att.</th>
+            <th>TOI 2yr</th>
+            <th>TOI 1yr</th>
+            <th>ET</th>
+            <th>Total</th>
+            <th>QL Orders</th>
+            <th>Cheque Orders</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div style="padding:10px 12px; border-top: 1.5px solid var(--border); background:#fafcff;">
+      <button class="btn-add-row" onclick="addRow()">+ Add Intern Row</button>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="summary-chips">
+      <div class="chip">Present: <span id="sumPresent">0</span></div>
+      <div class="chip">TOI 2yr: <span id="sumTOI2">0</span></div>
+      <div class="chip">TOI 1yr: <span id="sumTOI1">0</span></div>
+      <div class="chip">ET: <span id="sumET">0</span></div>
+      <div class="chip">Total Orders: <span id="sumTotal">0</span></div>
+      <div class="chip">QL: <span id="sumQL">0</span></div>
+      <div class="chip">Cheque: <span id="sumCheque">0</span></div>
+    </div>
+    <button class="btn-submit" id="submitBtn" onclick="submitData()">SUBMIT DAY</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TEAM_CODE = 'KV';
+let SCRIPT_URL = '';
+let SHEET_ID = '';
+
+function loadConfig() {
+  SCRIPT_URL = localStorage.getItem('sip_script_url_' + TEAM_CODE) || '';
+  SHEET_ID = localStorage.getItem('sip_sheet_id_' + TEAM_CODE) || '';
+  if (SCRIPT_URL) {
+    document.getElementById('scriptUrlInput').value = SCRIPT_URL;
+    document.getElementById('sheetIdInput').value = SHEET_ID;
+    document.getElementById('setupBanner').style.display = 'none';
+    setSyncStatus('ok', '● Connected');
+  } else { setSyncStatus('err', '● Setup Required'); }
+}
+
+function saveConfig() {
+  SCRIPT_URL = document.getElementById('scriptUrlInput').value.trim();
+  SHEET_ID = document.getElementById('sheetIdInput').value.trim();
+  if (!SCRIPT_URL) { showToast('Please enter the Apps Script URL', 'error'); return; }
+  localStorage.setItem('sip_script_url_' + TEAM_CODE, SCRIPT_URL);
+  localStorage.setItem('sip_sheet_id_' + TEAM_CODE, SHEET_ID);
+  document.getElementById('setupBanner').style.display = 'none';
+  setSyncStatus('ok', '● Connected');
+  showToast('✓ Configuration saved!', 'success');
+}
+
+async function testConnection() {
+  if (!SCRIPT_URL) { showToast('Save config first', 'error'); return; }
+  setSyncStatus('loading', '● Testing...');
+  try {
+    const r = await fetch(SCRIPT_URL + '?action=ping&team=' + TEAM_CODE);
+    const d = await r.json();
+    if (d.status === 'ok') { setSyncStatus('ok', '● Connected'); showToast('✓ Connection successful!', 'success'); }
+    else { setSyncStatus('err', '● Error'); showToast('Connection failed: ' + (d.message||'unknown'), 'error'); }
+  } catch(e) { setSyncStatus('err', '● Failed'); showToast('Cannot reach script. Check URL.', 'error'); }
+}
+
+function initDate() {
+  const today = new Date();
+  document.getElementById('todayDisplay').textContent = today.toLocaleDateString('en-IN', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  document.getElementById('entryDate').valueAsDate = today;
+}
+
+let rowId = 0;
+
+function addRow(data) {
+  rowId++;
+  const tbody = document.getElementById('tableBody');
+  const tr = document.createElement('tr');
+  tr.dataset.rid = rowId;
+  tr.innerHTML = `
+    <td class="row-num">${tbody.rows.length + 1}</td>
+    <td class="join-date"><input class="cell-input" type="date" value="${data&&data.joiningDate||''}"></td>
+    <td><input class="cell-input code" type="text" placeholder="INT01" value="${data&&data.code||''}" style="width:80px"></td>
+    <td><input class="cell-input" type="text" placeholder="Intern Name" value="${data&&data.name||''}"></td>
+    <td style="width:70px">
+      <select class="att-select ${data&&data.att==='P'?'present':data&&data.att==='A'?'absent':''}" onchange="styleAtt(this);calcRow(this)">
+        <option value="" ${!data||!data.att?'selected':''}>—</option>
+        <option value="P" ${data&&data.att==='P'?'selected':''}>P</option>
+        <option value="A" ${data&&data.att==='A'?'selected':''}>A</option>
+      </select>
+    </td>
+    <td><input class="num-input" type="number" min="0" value="${data&&data.toi2||0}" oninput="calcRow(this)"></td>
+    <td><input class="num-input" type="number" min="0" value="${data&&data.toi1||0}" oninput="calcRow(this)"></td>
+    <td><input class="num-input" type="number" min="0" value="${data&&data.et||0}" oninput="calcRow(this)"></td>
+    <td class="total-cell" id="total_${rowId}">${data?(+data.toi2||0)+(+data.toi1||0)+(+data.et||0):0}</td>
+    <td><input class="num-input" type="number" min="0" value="${data&&data.ql||0}"></td>
+    <td><input class="num-input" type="number" min="0" value="${data&&data.cheque||0}"></td>
+    <td><button onclick="removeRow(this)" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:18px;padding:4px 8px;line-height:1;" title="Remove">×</button></td>
+  `;
+  tbody.appendChild(tr);
+  updateRowNumbers();
+  updateSummary();
+}
+
+function removeRow(btn) { btn.closest('tr').remove(); updateRowNumbers(); updateSummary(); }
+
+function updateRowNumbers() {
+  const rows = document.querySelectorAll('#tableBody tr');
+  rows.forEach((tr, i) => { tr.querySelector('.row-num').textContent = i + 1; });
+  document.getElementById('rowCountLabel').textContent = rows.length + ' intern' + (rows.length !== 1 ? 's' : '');
+}
+
+function styleAtt(sel) {
+  sel.className = 'att-select';
+  if (sel.value === 'P') sel.classList.add('present');
+  else if (sel.value === 'A') sel.classList.add('absent');
+}
+
+function calcRow(input) {
+  const tr = input.closest('tr');
+  const rid = tr.dataset.rid;
+  const nums = tr.querySelectorAll('.num-input');
+  document.getElementById('total_' + rid).textContent = (parseInt(nums[0].value)||0)+(parseInt(nums[1].value)||0)+(parseInt(nums[2].value)||0);
+  updateSummary();
+}
+
+function updateSummary() {
+  const rows = document.querySelectorAll('#tableBody tr');
+  let present=0,toi2=0,toi1=0,et=0,total=0,ql=0,cheque=0;
+  rows.forEach(tr => {
+    if (tr.querySelector('.att-select').value === 'P') present++;
+    const nums = tr.querySelectorAll('.num-input');
+    const t2=parseInt(nums[0].value)||0, t1=parseInt(nums[1].value)||0, e=parseInt(nums[2].value)||0;
+    toi2+=t2; toi1+=t1; et+=e; total+=t2+t1+e;
+    ql+=parseInt(nums[3].value)||0; cheque+=parseInt(nums[4].value)||0;
+  });
+  document.getElementById('sumPresent').textContent=present;
+  document.getElementById('sumTOI2').textContent=toi2;
+  document.getElementById('sumTOI1').textContent=toi1;
+  document.getElementById('sumET').textContent=et;
+  document.getElementById('sumTotal').textContent=total;
+  document.getElementById('sumQL').textContent=ql;
+  document.getElementById('sumCheque').textContent=cheque;
+}
+
+async function submitData() {
+  if (!SCRIPT_URL) { showToast('Please configure the Apps Script URL first', 'error'); return; }
+  const entryDate = document.getElementById('entryDate').value;
+  if (!entryDate) { showToast('Please select an entry date', 'error'); return; }
+  const rows = document.querySelectorAll('#tableBody tr');
+  if (rows.length === 0) { showToast('No rows to submit', 'error'); return; }
+  const records = [];
+  let hasError = false;
+  rows.forEach((tr, idx) => {
+    const inputs = tr.querySelectorAll('.cell-input');
+    const code = inputs[1].value.trim();
+    const name = inputs[2].value.trim();
+    if (!code) { showToast(`Row ${idx+1}: Intern Code is required`, 'error'); hasError=true; return; }
+    if (!name) { showToast(`Row ${idx+1}: Name is required`, 'error'); hasError=true; return; }
+    const nums = tr.querySelectorAll('.num-input');
+    records.push({ entryDate, team: TEAM_CODE, joiningDate: inputs[0].value, code, name,
+      att: tr.querySelector('.att-select').value,
+      toi2: parseInt(nums[0].value)||0, toi1: parseInt(nums[1].value)||0, et: parseInt(nums[2].value)||0,
+      ql: parseInt(nums[3].value)||0, cheque: parseInt(nums[4].value)||0 });
+  });
+  if (hasError) return;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled=true; btn.textContent='SUBMITTING...';
+  setSyncStatus('loading', '● Saving...');
+  try {
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'submit', records}) });
+    setSyncStatus('ok', '● Saved ✓');
+    showToast(`✓ ${records.length} record(s) submitted`, 'success');
+  } catch(e) { setSyncStatus('err', '● Error'); showToast('Submit failed. Check connection.', 'error'); }
+  btn.textContent='SUBMIT DAY'; btn.disabled=false;
+}
+
+async function loadExistingEntries() {
+  if (!SCRIPT_URL) { showToast('Configure connection first', 'error'); return; }
+  const entryDate = document.getElementById('entryDate').value;
+  if (!entryDate) { showToast('Select a date first', 'error'); return; }
+  document.getElementById('loadBtn').textContent='Loading...';
+  setSyncStatus('loading', '● Loading...');
+  try {
+    const r = await fetch(`${SCRIPT_URL}?action=load&team=${TEAM_CODE}&date=${entryDate}`);
+    const d = await r.json();
+    if (d.records && d.records.length > 0) {
+      document.getElementById('tableBody').innerHTML=''; rowId=0;
+      d.records.forEach(rec => addRow(rec));
+      showToast(`Loaded ${d.records.length} record(s)`, 'success');
+      setSyncStatus('ok', '● Loaded');
+    } else { showToast('No records for this date', 'success'); setSyncStatus('ok', '● Connected'); }
+  } catch(e) { showToast('Could not load entries', 'error'); setSyncStatus('err', '● Error'); }
+  document.getElementById('loadBtn').textContent='↻ Load Existing';
+}
+
+function setSyncStatus(type, msg) {
+  const el = document.getElementById('syncStatus');
+  el.className = 'sync-status sync-' + type;
+  el.textContent = msg;
+}
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 4000);
+}
+
+loadConfig(); initDate();
+for (let i = 0; i < 5; i++) addRow();
+</script>
+</body>
+</html>

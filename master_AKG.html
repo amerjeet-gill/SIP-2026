@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIP 2026 — Master Dashboard | AKG</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef2f7;
+    --card: #ffffff;
+    --border: #d1dce8;
+    --accent: #e85d04;
+    --header-bg: #0f2a44;
+    --gold: #d97706;
+    --gold-light: #fef3c7;
+    --gold-border: #fcd34d;
+    --text: #1e2d3d;
+    --muted: #5a7290;
+    --success: #15803d;
+    --success-bg: #dcfce7;
+    --danger: #b91c1c;
+    --danger-bg: #fee2e2;
+    --info: #0369a1;
+    --info-bg: #e0f2fe;
+    --th-bg: #eef3f8;
+    --row-hover: #f8fbff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  header {
+    background: var(--header-bg);
+    border-bottom: 4px solid var(--gold);
+    padding: 18px 28px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    box-shadow: 0 2px 16px rgba(15,42,68,0.2);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .prog-label { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 3px; color: #7bafd4; }
+  .dash-title { font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 3px; line-height: 1; color: #fff; }
+  .dash-title span { color: #fbbf24; }
+  .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .date-display { font-size: 12px; color: #7bafd4; }
+  .sync-status { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; }
+  .sync-ok { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+  .sync-err { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .sync-loading { background: #fef3c7; color: var(--gold); border: 1px solid #fcd34d; }
+  .btn-refresh {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    color: #fff; border: none; border-radius: 8px;
+    padding: 8px 20px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1.5px;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 2px 10px rgba(217,119,6,0.35);
+  }
+  .btn-refresh:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(217,119,6,0.45); }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 24px 20px; }
+
+  .setup-banner {
+    background: #fffbeb;
+    border: 1.5px solid #fcd34d;
+    border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 24px;
+    font-size: 13px; color: var(--muted); line-height: 1.7;
+  }
+  .setup-banner strong { color: var(--gold); }
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  @media (max-width: 600px) { .config-grid { grid-template-columns: 1fr; } }
+  .config-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; }
+  .config-input {
+    background: #fff; border: 1.5px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 8px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; width: 100%; margin-top: 4px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .config-input:focus { border-color: var(--gold); }
+
+  .filter-bar {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 14px 18px; margin-bottom: 20px;
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .filter-bar label { font-size: 12px; color: var(--muted); white-space: nowrap; font-weight: 600; }
+  .filter-bar input, .filter-bar select {
+    background: #f8fafc; border: 1.5px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 7px 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .filter-bar input:focus, .filter-bar select:focus { border-color: var(--gold); }
+  .filter-group { display: flex; align-items: center; gap: 8px; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .kpi-card {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: var(--kpi-color, var(--gold)); }
+  .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .kpi-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+  .kpi-value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--kpi-color, var(--gold)); line-height: 1; }
+  .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .team-tabs {
+    display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap;
+    background: var(--card); padding: 8px; border-radius: 12px;
+    border: 1.5px solid var(--border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .team-tab {
+    background: transparent; border: 1.5px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 7px 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+  }
+  .team-tab:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
+  .team-tab.active { background: var(--gold); color: #fff; border-color: var(--gold); }
+
+  .table-wrap {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+    overflow: hidden; margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  .table-header {
+    padding: 14px 20px; border-bottom: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(90deg, #fffbeb, #ffffff);
+    flex-wrap: wrap; gap: 8px;
+  }
+  .table-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; color: var(--gold); }
+  .export-btn {
+    background: #fff; border: 1.5px solid var(--border); color: var(--muted);
+    border-radius: 6px; padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .export-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
+
+  .overflow-x { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  thead th {
+    background: var(--th-bg); padding: 10px 10px;
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1.5px solid var(--border);
+    white-space: nowrap; text-align: center;
+  }
+  thead th:nth-child(1), thead th:nth-child(2), thead th:nth-child(3), thead th:nth-child(4) { text-align: left; }
+  tbody tr { transition: background 0.15s; border-bottom: 1px solid #e8eef4; }
+  tbody tr:hover { background: var(--row-hover); }
+  td { padding: 9px 10px; font-size: 13px; text-align: center; vertical-align: middle; }
+  td:nth-child(1), td:nth-child(2), td:nth-child(3), td:nth-child(4) { text-align: left; }
+  .code-cell { font-weight: 700; color: var(--accent); }
+  .team-badge {
+    display: inline-block; background: var(--gold-light);
+    border: 1.5px solid var(--gold-border); color: var(--gold);
+    border-radius: 5px; padding: 2px 8px; font-size: 11px; font-weight: 800; letter-spacing: 1px;
+  }
+  .avg-cell { font-weight: 800; color: var(--info); }
+  .total-cell { font-weight: 800; color: var(--accent); }
+  .att-badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+  .att-high { background: var(--success-bg); color: var(--success); }
+  .att-med { background: var(--gold-light); color: var(--gold); }
+  .att-low { background: var(--danger-bg); color: var(--danger); }
+  tfoot tr { background: #f8fafc; border-top: 2px solid var(--border); }
+  tfoot td { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1px; color: var(--gold); padding: 10px; }
+
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .team-card {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+    overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .team-card:hover { transform: translateY(-3px); box-shadow: 0 6px 24px rgba(0,0,0,0.1); }
+  .team-card-header {
+    padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1.5px solid var(--border);
+    background: linear-gradient(90deg, #fffbeb, #fff);
+  }
+  .team-card-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--gold); }
+  .team-card-count { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .team-card-body { padding: 14px 16px; }
+  .team-stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .team-stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .team-stat-val { font-size: 13px; font-weight: 800; color: var(--text); }
+  .progress-bar { height: 4px; background: #e8eef4; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--accent)); border-radius: 2px; transition: width 0.5s; }
+
+  .loading-state { text-align: center; padding: 48px; color: var(--muted); font-size: 14px; }
+  .loading-state .spin {
+    display: inline-block; width: 28px; height: 28px;
+    border: 2px solid var(--border); border-top-color: var(--gold);
+    border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 14px 22px; border-radius: 10px; font-size: 14px; font-weight: 600;
+    z-index: 9999; transform: translateY(80px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    max-width: 320px; box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--success-bg); border: 1.5px solid #86efac; color: var(--success); }
+  .toast.error { background: var(--danger-bg); border: 1.5px solid #fca5a5; color: var(--danger); }
+
+  @media (max-width: 768px) {
+    .dash-title { font-size: 24px; }
+    .container { padding: 14px 10px; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="prog-label">SIP 2026 · TOI RMD SUMMER INTERNSHIP</div>
+    <div class="dash-title">MASTER DASHBOARD <span>AKG</span></div>
+  </div>
+  <div class="header-right">
+    <span class="date-display" id="todayDisplay"></span>
+    <span class="sync-status sync-loading" id="syncStatus">● Connecting...</span>
+    <button class="btn-refresh" onclick="loadData()">↻ REFRESH</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="setup-banner" id="setupBanner">
+    <strong>⚙️ Admin Setup</strong> — Enter your Google Apps Script URL to load all team data in real-time.
+    <div class="config-grid">
+      <div>
+        <div class="config-label">Apps Script Web App URL</div>
+        <input class="config-input" id="scriptUrlInput" type="url" placeholder="https://script.google.com/macros/s/...../exec">
+      </div>
+      <div>
+        <div class="config-label">Google Sheet ID</div>
+        <input class="config-input" id="sheetIdInput" type="text" placeholder="Sheet ID from URL">
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <button onclick="saveConfig()" style="background:var(--gold);color:#fff;border:none;border-radius:6px;padding:7px 18px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;font-weight:700;">Save & Load</button>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-group"><label>FROM</label><input type="date" id="filterFrom"></div>
+    <div class="filter-group"><label>TO</label><input type="date" id="filterTo"></div>
+    <div class="filter-group">
+      <label>TEAM</label>
+      <select id="filterTeam">
+        <option value="ALL">All Teams</option>
+        <option>AK</option><option>AS</option><option>VP</option>
+        <option>VR</option><option>KV</option><option>NB</option><option>DD</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>SEARCH</label>
+      <input type="text" id="filterSearch" placeholder="Code or name..." style="width:170px">
+    </div>
+    <button onclick="applyFilters()" style="background:var(--gold);color:#fff;border:none;border-radius:8px;padding:7px 18px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer;margin-left:auto;box-shadow:0 2px 8px rgba(217,119,6,0.3);">FILTER</button>
+    <button onclick="clearFilters()" style="background:#fff;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;font-weight:600;">Clear</button>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--kpi-color:var(--gold)"><div class="kpi-label">Total Interns</div><div class="kpi-value" id="kpiInterns">—</div><div class="kpi-sub">across all teams</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--success)"><div class="kpi-label">Present Today</div><div class="kpi-value" id="kpiPresent">—</div><div class="kpi-sub" id="kpiPresentPct">—</div></div>
+    <div class="kpi-card" style="--kpi-color:#0369a1"><div class="kpi-label">TOI 2yr</div><div class="kpi-value" id="kpiTOI2">—</div><div class="kpi-sub">total orders</div></div>
+    <div class="kpi-card" style="--kpi-color:#7c3aed"><div class="kpi-label">TOI 1yr</div><div class="kpi-value" id="kpiTOI1">—</div><div class="kpi-sub">total orders</div></div>
+    <div class="kpi-card" style="--kpi-color:#059669"><div class="kpi-label">ET</div><div class="kpi-value" id="kpiET">—</div><div class="kpi-sub">total orders</div></div>
+    <div class="kpi-card" style="--kpi-color:var(--accent)"><div class="kpi-label">Total Orders</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">combined</div></div>
+    <div class="kpi-card" style="--kpi-color:#b45309"><div class="kpi-label">Avg / Intern</div><div class="kpi-value" id="kpiAvg">—</div><div class="kpi-sub">orders per day</div></div>
+  </div>
+
+  <div class="team-tabs">
+    <button class="team-tab active" onclick="switchTab('ALL',this)">ALL TEAMS</button>
+    <button class="team-tab" onclick="switchTab('AK',this)">AK</button>
+    <button class="team-tab" onclick="switchTab('AS',this)">AS</button>
+    <button class="team-tab" onclick="switchTab('VP',this)">VP</button>
+    <button class="team-tab" onclick="switchTab('VR',this)">VR</button>
+    <button class="team-tab" onclick="switchTab('KV',this)">KV</button>
+    <button class="team-tab" onclick="switchTab('NB',this)">NB</button>
+    <button class="team-tab" onclick="switchTab('DD',this)">DD</button>
+  </div>
+
+  <div class="team-grid" id="teamGrid"></div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span class="table-title">INTERN MASTER FILE</span>
+      <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+    <div class="overflow-x">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Team</th><th>Intern Code</th><th>Name</th>
+            <th>Joining Date</th><th>No. of Days</th><th>TOI 2yr</th><th>TOI 1yr</th>
+            <th>ET</th><th>Total</th><th>QL Orders</th><th>Cheque Orders</th><th>Average</th>
+          </tr>
+        </thead>
+        <tbody id="masterBody">
+          <tr><td colspan="13" class="loading-state"><div class="spin"></div><br>Load data to view master file</td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4">TOTALS</td>
+            <td id="ftDays">—</td><td></td>
+            <td id="ftTOI2">—</td><td id="ftTOI1">—</td><td id="ftET">—</td>
+            <td id="ftTotal">—</td><td id="ftQL">—</td><td id="ftCheque">—</td><td id="ftAvg">—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <button onclick="toggleDailyLog()" id="dailyToggleBtn" style="background:#fff;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 20px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;font-weight:600;margin-bottom:16px;">Show Daily Log ▾</button>
+
+  <div class="table-wrap" id="dailyLogWrap" style="display:none">
+    <div class="table-header">
+      <span class="table-title">DAILY LOG</span>
+      <button class="export-btn" onclick="exportDailyCSV()">⬇ Export CSV</button>
+    </div>
+    <div class="overflow-x">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Date</th><th>Team</th><th>Intern Code</th><th>Name</th>
+          <th>Att.</th><th>TOI 2yr</th><th>TOI 1yr</th><th>ET</th><th>Total</th><th>QL</th><th>Cheque</th></tr>
+        </thead>
+        <tbody id="dailyBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let SCRIPT_URL = '';
+let allRecords = [];
+let currentTab = 'ALL';
+const TEAMS = ['AK','AS','VP','VR','KV','NB','DD'];
+
+function loadConfig() {
+  SCRIPT_URL = localStorage.getItem('sip_master_script_url') || '';
+  if (SCRIPT_URL) {
+    document.getElementById('scriptUrlInput').value = SCRIPT_URL;
+    document.getElementById('sheetIdInput').value = localStorage.getItem('sip_master_sheet_id') || '';
+    document.getElementById('setupBanner').style.display = 'none';
+    setSyncStatus('loading', '● Loading data...');
+    loadData();
+  } else { setSyncStatus('err', '● Setup Required'); }
+}
+
+function saveConfig() {
+  SCRIPT_URL = document.getElementById('scriptUrlInput').value.trim();
+  const sid = document.getElementById('sheetIdInput').value.trim();
+  if (!SCRIPT_URL) { showToast('Please enter the Apps Script URL', 'error'); return; }
+  localStorage.setItem('sip_master_script_url', SCRIPT_URL);
+  localStorage.setItem('sip_master_sheet_id', sid);
+  document.getElementById('setupBanner').style.display = 'none';
+  loadData();
+}
+
+async function loadData() {
+  if (!SCRIPT_URL) return;
+  setSyncStatus('loading', '● Loading...');
+  try {
+    const r = await fetch(SCRIPT_URL + '?action=master');
+    const d = await r.json();
+    if (d.records) {
+      allRecords = d.records;
+      applyFilters();
+      setSyncStatus('ok', '● Live');
+      showToast('✓ Data loaded — ' + allRecords.length + ' records', 'success');
+    } else { setSyncStatus('err', '● No data'); showToast(d.message || 'No data returned', 'error'); renderEmpty(); }
+  } catch(e) { setSyncStatus('err', '● Error'); showToast('Failed to load data.', 'error'); renderEmpty(); }
+}
+
+function buildMaster(records) {
+  const map = {};
+  records.forEach(r => {
+    const key = r.team + '|' + r.code;
+    if (!map[key]) map[key] = { team:r.team, code:r.code, name:r.name, joiningDate:r.joiningDate, days:0, toi2:0, toi1:0, et:0, total:0, ql:0, cheque:0 };
+    const m = map[key];
+    if (r.att==='P') m.days++;
+    m.toi2+=(+r.toi2||0); m.toi1+=(+r.toi1||0); m.et+=(+r.et||0);
+    m.total+=(+r.toi2||0)+(+r.toi1||0)+(+r.et||0);
+    m.ql+=(+r.ql||0); m.cheque+=(+r.cheque||0);
+  });
+  return Object.values(map).sort((a,b)=>a.team.localeCompare(b.team)||a.code.localeCompare(b.code));
+}
+
+function applyFilters() {
+  const from = document.getElementById('filterFrom').value;
+  const to = document.getElementById('filterTo').value;
+  const team = document.getElementById('filterTeam').value;
+  const search = document.getElementById('filterSearch').value.trim().toLowerCase();
+  let filtered = allRecords.filter(r => {
+    if (from && r.entryDate < from) return false;
+    if (to && r.entryDate > to) return false;
+    if (team && team !== 'ALL' && r.team !== team) return false;
+    if (search && !r.code.toLowerCase().includes(search) && !r.name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const fMaster = buildMaster(filtered);
+  const tabMaster = currentTab === 'ALL' ? fMaster : fMaster.filter(m => m.team === currentTab);
+  renderKPIs(tabMaster, filtered);
+  renderTeamCards(fMaster);
+  renderMasterTable(tabMaster);
+  renderDailyLog(currentTab==='ALL' ? filtered : filtered.filter(r=>r.team===currentTab));
+}
+
+function clearFilters() {
+  document.getElementById('filterFrom').value='';
+  document.getElementById('filterTo').value='';
+  document.getElementById('filterTeam').value='ALL';
+  document.getElementById('filterSearch').value='';
+  applyFilters();
+}
+
+function switchTab(team, btn) {
+  currentTab = team;
+  document.querySelectorAll('.team-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+
+function renderKPIs(data, rawFiltered) {
+  const today = new Date().toISOString().split('T')[0];
+  const todayRecs = rawFiltered.filter(r=>r.entryDate===today);
+  const presentToday = todayRecs.filter(r=>r.att==='P').length;
+  const pct = data.length > 0 ? Math.round((presentToday/data.length)*100) : 0;
+  const toi2=data.reduce((a,b)=>a+b.toi2,0), toi1=data.reduce((a,b)=>a+b.toi1,0);
+  const et=data.reduce((a,b)=>a+b.et,0), total=data.reduce((a,b)=>a+b.total,0);
+  const days=data.reduce((a,b)=>a+b.days,0);
+  document.getElementById('kpiInterns').textContent=data.length;
+  document.getElementById('kpiPresent').textContent=presentToday;
+  document.getElementById('kpiPresentPct').textContent=pct+'% present today';
+  document.getElementById('kpiTOI2').textContent=toi2;
+  document.getElementById('kpiTOI1').textContent=toi1;
+  document.getElementById('kpiET').textContent=et;
+  document.getElementById('kpiTotal').textContent=total;
+  document.getElementById('kpiAvg').textContent=days>0?(total/days).toFixed(1):'—';
+}
+
+function renderTeamCards(fMaster) {
+  const maxTotal = Math.max(...fMaster.map(m=>m.total), 1);
+  document.getElementById('teamGrid').innerHTML = TEAMS.map(team => {
+    const td = fMaster.filter(m=>m.team===team);
+    const total=td.reduce((a,b)=>a+b.total,0), days=td.reduce((a,b)=>a+b.days,0);
+    const avg=days>0?(total/days).toFixed(1):'0';
+    const teamMax=td.length>0?Math.max(...td.map(m=>m.total)):0;
+    const pct=Math.round((teamMax/maxTotal)*100);
+    return `<div class="team-card">
+      <div class="team-card-header"><span class="team-card-name">Team ${team}</span><span class="team-card-count">${td.length} intern${td.length!==1?'s':''}</span></div>
+      <div class="team-card-body">
+        <div class="team-stat-row"><span class="team-stat-label">Total Orders</span><span class="team-stat-val">${total}</span></div>
+        <div class="team-stat-row"><span class="team-stat-label">Avg / Day</span><span class="team-stat-val">${avg}</span></div>
+        <div class="team-stat-row"><span class="team-stat-label">Attendance Days</span><span class="team-stat-val">${days}</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMasterTable(data) {
+  if (!data || data.length === 0) {
+    document.getElementById('masterBody').innerHTML='<tr><td colspan="13" style="text-align:center;padding:32px;color:var(--muted)">No data to display</td></tr>'; return;
+  }
+  let tTOI2=0,tTOI1=0,tET=0,tTotal=0,tQL=0,tCheque=0,tDays=0;
+  const rows = data.map((m,i) => {
+    const avg=m.days>0?(m.total/m.days).toFixed(1):'—';
+    const attClass=m.days>=20?'att-high':m.days>=10?'att-med':'att-low';
+    tTOI2+=m.toi2;tTOI1+=m.toi1;tET+=m.et;tTotal+=m.total;tQL+=m.ql;tCheque+=m.cheque;tDays+=m.days;
+    return `<tr>
+      <td style="color:var(--muted);font-size:12px;font-weight:600">${i+1}</td>
+      <td><span class="team-badge">${m.team}</span></td>
+      <td class="code-cell">${m.code}</td>
+      <td style="font-weight:600">${m.name}</td>
+      <td style="font-size:12px;color:var(--muted)">${m.joiningDate||'—'}</td>
+      <td><span class="att-badge ${attClass}">${m.days}</span></td>
+      <td>${m.toi2}</td><td>${m.toi1}</td><td>${m.et}</td>
+      <td class="total-cell">${m.total}</td>
+      <td>${m.ql}</td><td>${m.cheque}</td>
+      <td class="avg-cell">${avg}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('masterBody').innerHTML=rows;
+  document.getElementById('ftDays').textContent=tDays;
+  document.getElementById('ftTOI2').textContent=tTOI2;
+  document.getElementById('ftTOI1').textContent=tTOI1;
+  document.getElementById('ftET').textContent=tET;
+  document.getElementById('ftTotal').textContent=tTotal;
+  document.getElementById('ftQL').textContent=tQL;
+  document.getElementById('ftCheque').textContent=tCheque;
+  document.getElementById('ftAvg').textContent=tDays>0?(tTotal/tDays).toFixed(1):'—';
+}
+
+function renderDailyLog(records) {
+  if (!records || records.length===0) { document.getElementById('dailyBody').innerHTML='<tr><td colspan="12" style="text-align:center;padding:24px;color:var(--muted)">No daily records</td></tr>'; return; }
+  const sorted=[...records].sort((a,b)=>(b.entryDate||'').localeCompare(a.entryDate||''));
+  document.getElementById('dailyBody').innerHTML=sorted.map((r,i)=>`<tr>
+    <td style="color:var(--muted);font-size:12px;font-weight:600">${i+1}</td>
+    <td style="font-size:12px">${r.entryDate||'—'}</td>
+    <td><span class="team-badge">${r.team}</span></td>
+    <td class="code-cell">${r.code}</td>
+    <td style="font-weight:600">${r.name}</td>
+    <td style="color:${r.att==='P'?'var(--success)':'var(--danger)'};font-weight:800">${r.att||'—'}</td>
+    <td>${r.toi2||0}</td><td>${r.toi1||0}</td><td>${r.et||0}</td>
+    <td class="total-cell">${(+r.toi2||0)+(+r.toi1||0)+(+r.et||0)}</td>
+    <td>${r.ql||0}</td><td>${r.cheque||0}</td>
+  </tr>`).join('');
+}
+
+function renderEmpty() {
+  document.getElementById('masterBody').innerHTML='<tr><td colspan="13" style="text-align:center;padding:32px;color:var(--muted)">Configure connection to load data</td></tr>';
+}
+
+function toggleDailyLog() {
+  const w=document.getElementById('dailyLogWrap'), btn=document.getElementById('dailyToggleBtn');
+  if (w.style.display==='none') { w.style.display=''; btn.textContent='Hide Daily Log ▴'; }
+  else { w.style.display='none'; btn.textContent='Show Daily Log ▾'; }
+}
+
+function exportCSV() {
+  const rows=[['Team','Intern Code','Name','Joining Date','Days','TOI 2yr','TOI 1yr','ET','Total','QL Orders','Cheque Orders','Average']];
+  document.getElementById('masterBody').querySelectorAll('tr').forEach(tr=>{
+    const cells=tr.querySelectorAll('td');
+    if(cells.length>5) rows.push([1,2,3,4,5,6,7,8,9,10,11,12].map(i=>cells[i].textContent.trim()));
+  });
+  downloadCSV(rows,'SIP2026_Master_'+new Date().toISOString().split('T')[0]+'.csv');
+}
+
+function exportDailyCSV() {
+  const rows=[['Date','Team','Intern Code','Name','Attendance','TOI 2yr','TOI 1yr','ET','Total','QL','Cheque']];
+  document.getElementById('dailyBody').querySelectorAll('tr').forEach(tr=>{
+    const cells=tr.querySelectorAll('td');
+    if(cells.length>5) rows.push(Array.from(cells).slice(1).map(c=>c.textContent.trim()));
+  });
+  downloadCSV(rows,'SIP2026_DailyLog_'+new Date().toISOString().split('T')[0]+'.csv');
+}
+
+function downloadCSV(rows, filename) {
+  const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=filename; a.click();
+}
+
+function setSyncStatus(type, msg) {
+  const el=document.getElementById('syncStatus');
+  el.className='sync-status sync-'+type; el.textContent=msg;
+}
+function showToast(msg, type) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+document.getElementById('todayDisplay').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+const today=new Date(), y=today.getFullYear(), m=String(today.getMonth()+1).padStart(2,'0');
+document.getElementById('filterFrom').value=`${y}-${m}-01`;
+document.getElementById('filterTo').value=today.toISOString().split('T')[0];
+loadConfig();
+</script>
+</body>
+</html>

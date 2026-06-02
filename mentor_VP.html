@@ -3,567 +3,450 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SIP 2026 — Team VP | Daily Input</title>
+<title>SIP 2026 — Team VP</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #f0f4f8;
-    --card: #ffffff;
-    --border: #d1dce8;
-    --accent: #e85d04;
-    --accent2: #f77f00;
-    --header-bg: #1a3a5c;
-    --header-text: #ffffff;
-    --text: #1e2d3d;
-    --muted: #5a7290;
-    --success: #15803d;
-    --success-bg: #dcfce7;
-    --danger: #b91c1c;
-    --danger-bg: #fee2e2;
-    --row-hover: #fff7f0;
-    --input-bg: #f8fafc;
-    --th-bg: #eef3f8;
-    --chip-bg: #fff3eb;
-    --chip-border: #fcd5b0;
+  :root{
+    --bg:#f0f4f8;--card:#fff;--border:#d1dce8;
+    --accent:#e85d04;--navy:#1a3a5c;
+    --text:#1e2d3d;--muted:#5a7290;
+    --success:#15803d;--sbg:#dcfce7;--sborder:#86efac;
+    --danger:#b91c1c;--dbg:#fee2e2;
+    --ibg:#f8fafc;--thbg:#eef3f8;
+    --chipbg:#fff3eb;--chipborder:#fcd5b0;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-  }
-  header {
-    background: var(--header-bg);
-    border-bottom: 4px solid var(--accent);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 12px rgba(26,58,92,0.18);
-  }
-  .header-left { display: flex; flex-direction: column; }
-  .prog-label { font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 3px; color: #a8c5e0; }
-  .mentor-name { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 2px; line-height: 1; color: #fff; }
-  .mentor-name span { color: #ffb347; }
-  .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  .date-display { font-size: 12px; color: #a8c5e0; font-weight: 400; }
-  .sync-status { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; }
-  .sync-ok { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-  .sync-err { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
-  .sync-loading { background: #fff3eb; color: var(--accent); border: 1px solid #fcd5b0; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
 
-  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  header{
+    background:var(--navy);border-bottom:4px solid var(--accent);
+    padding:13px 20px;display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(26,58,92,0.2);
+  }
+  .prog-label{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:#7bafd4;}
+  .mentor-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;line-height:1;color:#fff;}
+  .mentor-name span{color:#ffb347;}
+  .hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .date-disp{font-size:12px;color:#7bafd4;}
+  .sync-dot{font-size:11px;padding:4px 11px;border-radius:20px;font-weight:700;}
+  .sync-ok{background:#dcfce7;color:#15803d;border:1px solid #86efac;}
+  .sync-err{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;}
+  .sync-loading{background:#fff3eb;color:var(--accent);border:1px solid #fcd5b0;}
+  .btn-cog{
+    background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.25);
+    color:#fff;border-radius:8px;padding:6px 13px;
+    font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;
+  }
+  .btn-cog:hover{background:rgba(255,255,255,0.22);}
 
-  .setup-banner {
-    background: #fff8f0;
-    border: 1.5px solid #fcd5b0;
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.7;
+  /* SETTINGS MODAL */
+  .overlay{
+    display:none;position:fixed;inset:0;background:rgba(10,20,40,0.5);
+    z-index:300;align-items:flex-start;justify-content:center;padding-top:68px;
   }
-  .setup-banner strong { color: var(--accent); }
-  .setup-banner code { background: #fff3eb; color: var(--accent); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; }
-  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-  @media (max-width: 600px) { .config-grid { grid-template-columns: 1fr; } }
-  .config-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; }
-  .config-input {
-    background: #fff;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    padding: 8px 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    width: 100%;
-    margin-top: 4px;
-    outline: none;
-    transition: border-color 0.2s;
+  .overlay.open{display:flex;}
+  .panel{
+    background:#fff;border:1.5px solid var(--border);border-radius:16px;
+    padding:24px 26px;width:100%;max-width:540px;margin:0 14px;
+    box-shadow:0 8px 40px rgba(0,0,0,0.18);
+    animation:sd 0.22s ease;
   }
-  .config-input:focus { border-color: var(--accent); }
+  @keyframes sd{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+  .panel h2{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:2px;color:var(--accent);margin-bottom:4px;}
+  .panel p{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;}
+  .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  @media(max-width:500px){.cgrid{grid-template-columns:1fr;}}
+  .clbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px;}
+  .cinp{
+    background:var(--ibg);border:1.5px solid var(--border);border-radius:8px;
+    color:var(--text);padding:9px 13px;font-family:'DM Sans',sans-serif;font-size:13px;
+    width:100%;outline:none;transition:border-color 0.2s;
+  }
+  .cinp:focus{border-color:var(--accent);}
+  .cbtns{display:flex;gap:9px;flex-wrap:wrap;}
+  .btn-save{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 22px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+  .btn-save:hover{background:#c94b02;}
+  .btn-test{background:#fff;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-test:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-x{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;padding:10px 6px;}
 
-  .date-bar {
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 20px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  /* NOT-CONNECTED */
+  .nc-bar{
+    background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;
+    padding:11px 16px;margin-bottom:16px;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    font-size:13px;color:#7c2d12;
   }
-  .date-bar label { font-size: 13px; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; white-space: nowrap; }
-  .date-bar input[type="date"] {
-    background: var(--input-bg);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    padding: 7px 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.2s;
-  }
-  .date-bar input[type="date"]:focus { border-color: var(--accent); }
-  .date-note { font-size: 12px; color: var(--muted); margin-left: auto; }
+  .nc-bar button{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-left:auto;}
 
-  .table-wrap {
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
-  }
-  .table-header {
-    padding: 14px 20px;
-    border-bottom: 1.5px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(90deg, #fff8f0, #ffffff);
-  }
-  .table-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1.5px; color: var(--accent); }
-  .row-count { font-size: 12px; color: var(--muted); font-weight: 500; }
+  /* MAIN */
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 14px;}
 
-  .overflow-x { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 800px; }
-  thead th {
-    background: var(--th-bg);
-    padding: 10px 8px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--muted);
-    border-bottom: 1.5px solid var(--border);
-    white-space: nowrap;
-    text-align: center;
+  .datebar{
+    background:var(--card);border:1.5px solid var(--border);border-radius:12px;
+    padding:13px 16px;margin-bottom:16px;
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    box-shadow:0 1px 4px rgba(0,0,0,0.05);
   }
-  thead th:first-child, thead th:nth-child(2), thead th:nth-child(3), thead th:nth-child(4) { text-align: left; }
-  tbody tr { transition: background 0.15s; border-bottom: 1px solid #e8eef4; }
-  tbody tr:hover { background: var(--row-hover); }
-  tbody tr:last-child { border-bottom: none; }
-
-  td { padding: 6px 8px; vertical-align: middle; }
-  td.row-num { font-size: 12px; color: var(--muted); text-align: center; width: 36px; font-weight: 600; }
-  td.join-date { width: 130px; }
-
-  input.cell-input {
-    background: var(--input-bg);
-    border: 1.5px solid #e2eaf2;
-    border-radius: 6px;
-    color: var(--text);
-    padding: 6px 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    width: 100%;
-    outline: none;
-    transition: border-color 0.2s, background 0.2s;
+  .datebar label{font-size:13px;color:var(--muted);font-weight:700;white-space:nowrap;}
+  .datebar input[type=date]{
+    background:var(--ibg);border:1.5px solid var(--border);border-radius:8px;
+    color:var(--text);padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;
   }
-  input.cell-input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(232,93,4,0.08); }
-  input.cell-input.code { font-weight: 700; color: var(--accent); }
+  .datebar input[type=date]:focus{border-color:var(--accent);}
+  .btn-load{background:#fff;border:1.5px solid var(--border);color:var(--muted);border-radius:7px;padding:6px 13px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-left:auto;}
+  .btn-load:hover{border-color:var(--accent);color:var(--accent);}
 
-  select.att-select {
-    background: var(--input-bg);
-    border: 1.5px solid #e2eaf2;
-    border-radius: 6px;
-    color: var(--text);
-    padding: 6px 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    width: 100%;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    appearance: none;
-    text-align: center;
+  .tbl-wrap{background:var(--card);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,0.06);}
+  .tbl-hdr{padding:12px 18px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#fff8f0,#fff);}
+  .tbl-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;color:var(--accent);}
+  .row-cnt{font-size:12px;color:var(--muted);font-weight:600;}
+  .ovx{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:800px;}
+  thead th{background:var(--thbg);padding:9px 8px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1.5px solid var(--border);white-space:nowrap;text-align:center;}
+  thead th:nth-child(-n+4){text-align:left;}
+  tbody tr{border-bottom:1px solid #e8eef4;transition:background 0.1s;}
+  tbody tr:hover{background:#fff8f2;}
+  td{padding:6px 8px;vertical-align:middle;}
+  td.rn{font-size:12px;color:var(--muted);text-align:center;width:32px;font-weight:700;}
+  input.ci{background:var(--ibg);border:1.5px solid #e2eaf2;border-radius:6px;color:var(--text);padding:6px 8px;font-family:'DM Sans',sans-serif;font-size:13px;width:100%;outline:none;transition:border-color 0.2s;}
+  input.ci:focus{border-color:var(--accent);background:#fff;}
+  input.ci.code{font-weight:700;color:var(--accent);}
+  select.att{background:var(--ibg);border:1.5px solid #e2eaf2;border-radius:6px;color:var(--text);padding:6px 8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;width:100%;outline:none;cursor:pointer;appearance:none;text-align:center;}
+  select.att.P{color:var(--success);background:var(--sbg);border-color:var(--sborder);}
+  select.att.A{color:var(--danger);background:var(--dbg);border-color:#fca5a5;}
+  input.ni{background:var(--ibg);border:1.5px solid #e2eaf2;border-radius:6px;color:var(--text);padding:6px 4px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;width:52px;outline:none;text-align:center;-moz-appearance:textfield;}
+  input.ni::-webkit-outer-spin-button,input.ni::-webkit-inner-spin-button{-webkit-appearance:none;}
+  input.ni:focus{border-color:var(--accent);background:#fff;}
+  .tc{font-weight:800;font-size:14px;color:var(--accent);text-align:center;}
+  .btn-add{background:none;border:1.5px dashed var(--border);color:var(--muted);border-radius:6px;padding:6px 16px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+  .btn-add:hover{border-color:var(--accent);color:var(--accent);background:#fff8f0;}
+
+  .btm{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:6px;}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;}
+  .chip{background:var(--chipbg);border:1.5px solid var(--chipborder);border-radius:20px;padding:5px 13px;font-size:12px;color:var(--accent);font-weight:700;}
+  .chip span{color:var(--text);font-weight:800;margin-left:3px;}
+  .btn-submit{
+    background:linear-gradient(135deg,var(--accent),#c94b02);color:#fff;border:none;
+    border-radius:10px;padding:12px 30px;font-family:'Bebas Neue',sans-serif;
+    font-size:18px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;
+    box-shadow:0 4px 14px rgba(232,93,4,0.35);min-width:170px;
   }
-  select.att-select:focus { border-color: var(--accent); }
-  select.att-select.present { color: var(--success); background: var(--success-bg); border-color: #86efac; }
-  select.att-select.absent { color: var(--danger); background: var(--danger-bg); border-color: #fca5a5; }
+  .btn-submit:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,93,4,0.45);}
+  .btn-submit:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
 
-  input.num-input {
-    background: var(--input-bg);
-    border: 1.5px solid #e2eaf2;
-    border-radius: 6px;
-    color: var(--text);
-    padding: 6px 4px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    width: 52px;
-    outline: none;
-    text-align: center;
-    transition: border-color 0.2s;
-    -moz-appearance: textfield;
+  .toast{
+    position:fixed;bottom:22px;right:22px;padding:13px 20px;border-radius:10px;
+    font-size:14px;font-weight:700;z-index:9999;
+    transform:translateY(80px);opacity:0;
+    transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    max-width:310px;box-shadow:0 4px 18px rgba(0,0,0,0.13);
   }
-  input.num-input::-webkit-outer-spin-button,
-  input.num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
-  input.num-input:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 3px rgba(232,93,4,0.08); }
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast.success{background:var(--sbg);border:1.5px solid var(--sborder);color:var(--success);}
+  .toast.error{background:var(--dbg);border:1.5px solid #fca5a5;color:var(--danger);}
 
-  .total-cell { font-weight: 800; font-size: 14px; color: var(--accent); text-align: center; min-width: 44px; }
-
-  .btn-add-row {
-    background: none;
-    border: 1.5px dashed var(--border);
-    color: var(--muted);
-    border-radius: 6px;
-    padding: 6px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .btn-add-row:hover { border-color: var(--accent); color: var(--accent); background: #fff8f0; }
-
-  .bottom-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 8px;
-  }
-  .summary-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-  .chip {
-    background: var(--chip-bg);
-    border: 1.5px solid var(--chip-border);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 12px;
-    color: var(--accent);
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .chip span { color: var(--text); font-weight: 800; margin-left: 4px; }
-
-  .btn-submit {
-    background: linear-gradient(135deg, var(--accent), #c94b02);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 32px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 14px rgba(232,93,4,0.35);
-    min-width: 180px;
-  }
-  .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,93,4,0.45); }
-  .btn-submit:active { transform: translateY(0); }
-  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    padding: 14px 22px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    z-index: 9999;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-    max-width: 320px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { background: var(--success-bg); border: 1.5px solid #86efac; color: var(--success); }
-  .toast.error { background: var(--danger-bg); border: 1.5px solid #fca5a5; color: var(--danger); }
-
-  @media (max-width: 768px) {
-    .mentor-name { font-size: 22px; }
-    .container { padding: 14px 10px; }
-    .btn-submit { width: 100%; }
-    .bottom-bar { flex-direction: column; align-items: stretch; }
+  @media(max-width:768px){
+    .mentor-name{font-size:22px;}
+    .wrap{padding:12px 10px;}
+    .btn-submit{width:100%;}
+    .btm{flex-direction:column;align-items:stretch;}
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-left">
-    <span class="prog-label">SIP 2026 · TOI RMD SUMMER INTERNSHIP</span>
-    <div class="mentor-name">TEAM <span id="teamNameHeader">VP</span></div>
+  <div>
+    <div class="prog-label">SIP 2026 · TOI RMD SUMMER INTERNSHIP</div>
+    <div class="mentor-name">TEAM <span id="tname">VP</span></div>
   </div>
-  <div class="header-right">
-    <span class="date-display" id="todayDisplay"></span>
-    <span class="sync-status sync-loading" id="syncStatus">● Connecting...</span>
+  <div class="hdr-right">
+    <span class="date-disp" id="ddisp"></span>
+    <span class="sync-dot sync-loading" id="sync">● Not Connected</span>
+    <button class="btn-cog" onclick="openS()">⚙ Settings</button>
   </div>
 </header>
 
-<div class="container">
-
-  <div class="setup-banner" id="setupBanner">
-    <strong>⚙️ One-time Setup Required</strong> — Enter your Google Apps Script Web App URL below to connect this form to Google Sheets.<br>
-    After deploying your Apps Script (see setup guide), paste the URL here. It will be saved in your browser.
-    <div class="config-grid">
+<!-- SETTINGS OVERLAY -->
+<div class="overlay" id="ov" onclick="if(event.target===this)closeS()">
+  <div class="panel">
+    <h2>⚙ Connection Settings</h2>
+    <p>Paste your <strong>Apps Script Web App URL</strong> and <strong>Sheet ID</strong>.<br>Saved in browser — only needed once per device.</p>
+    <div class="cgrid">
       <div>
-        <div class="config-label">Apps Script Web App URL</div>
-        <input class="config-input" id="scriptUrlInput" type="url" placeholder="https://script.google.com/macros/s/...../exec">
+        <div class="clbl">Apps Script Web App URL</div>
+        <input class="cinp" id="surl" type="url" placeholder="https://script.google.com/macros/s/…/exec">
       </div>
       <div>
-        <div class="config-label">Google Sheet ID</div>
-        <input class="config-input" id="sheetIdInput" type="text" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
+        <div class="clbl">Google Sheet ID</div>
+        <input class="cinp" id="sid" type="text" placeholder="Paste Sheet ID here">
       </div>
     </div>
-    <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-      <button onclick="saveConfig()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:7px 18px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;font-weight:700;">Save & Connect</button>
-      <button onclick="testConnection()" style="background:#fff;color:var(--muted);border:1.5px solid var(--border);border-radius:6px;padding:7px 18px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Test Connection</button>
+    <div class="cbtns">
+      <button class="btn-save" onclick="saveC()">💾 Save &amp; Connect</button>
+      <button class="btn-test" onclick="testC()">🔗 Test</button>
+      <button class="btn-x" onclick="closeS()">Cancel</button>
     </div>
   </div>
+</div>
 
-  <div class="date-bar">
+<div class="wrap">
+
+  <div class="nc-bar" id="ncbar" style="display:none">
+    <span>⚠️ <strong>Not connected.</strong> Click ⚙ Settings → paste URL + Sheet ID → Save &amp; Connect.</span>
+    <button onclick="openS()">⚙ Open Settings</button>
+  </div>
+
+  <div class="datebar">
     <label>📅 ENTRY DATE</label>
-    <input type="date" id="entryDate">
-    <span class="date-note">All rows below will be submitted for this date</span>
-    <button onclick="loadExistingEntries()" style="background:#fff;border:1.5px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 14px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;font-weight:600;" id="loadBtn">↻ Load Existing</button>
+    <input type="date" id="edate">
+    <span style="font-size:12px;color:var(--muted);margin-left:4px;">All rows will be submitted for this date</span>
+    <button class="btn-load" id="lbtn" onclick="loadExisting()">↻ Load Existing</button>
   </div>
 
-  <div class="table-wrap">
-    <div class="table-header">
-      <span class="table-title">Daily Intern Entry</span>
-      <span class="row-count" id="rowCountLabel">0 interns</span>
+  <div class="tbl-wrap">
+    <div class="tbl-hdr">
+      <span class="tbl-title">Daily Intern Entry</span>
+      <span class="row-cnt" id="rcnt">0 interns</span>
     </div>
-    <div class="overflow-x">
-      <table id="entryTable">
+    <div class="ovx">
+      <table>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Joining Date</th>
-            <th>Intern Code</th>
-            <th>Name</th>
-            <th>Att.</th>
-            <th>TOI 2yr</th>
-            <th>TOI 1yr</th>
-            <th>ET</th>
-            <th>Total</th>
-            <th>QL Orders</th>
-            <th>Cheque Orders</th>
-            <th></th>
+            <th>#</th><th>Joining Date</th><th>Intern Code</th><th>Name</th>
+            <th>Att.</th><th>TOI 2yr</th><th>TOI 1yr</th><th>ET</th>
+            <th>Total</th><th>QL Orders</th><th>Cheque Orders</th><th></th>
           </tr>
         </thead>
-        <tbody id="tableBody"></tbody>
+        <tbody id="tbody"></tbody>
       </table>
     </div>
-    <div style="padding:10px 12px; border-top: 1.5px solid var(--border); background:#fafcff;">
-      <button class="btn-add-row" onclick="addRow()">+ Add Intern Row</button>
+    <div style="padding:9px 12px;border-top:1.5px solid var(--border);background:#fafcff;">
+      <button class="btn-add" onclick="addRow()">+ Add Intern Row</button>
     </div>
   </div>
 
-  <div class="bottom-bar">
-    <div class="summary-chips">
-      <div class="chip">Present: <span id="sumPresent">0</span></div>
-      <div class="chip">TOI 2yr: <span id="sumTOI2">0</span></div>
-      <div class="chip">TOI 1yr: <span id="sumTOI1">0</span></div>
-      <div class="chip">ET: <span id="sumET">0</span></div>
-      <div class="chip">Total Orders: <span id="sumTotal">0</span></div>
-      <div class="chip">QL: <span id="sumQL">0</span></div>
-      <div class="chip">Cheque: <span id="sumCheque">0</span></div>
+  <div class="btm">
+    <div class="chips">
+      <div class="chip">Present:<span id="sP">0</span></div>
+      <div class="chip">TOI 2yr:<span id="sT2">0</span></div>
+      <div class="chip">TOI 1yr:<span id="sT1">0</span></div>
+      <div class="chip">ET:<span id="sE">0</span></div>
+      <div class="chip">Total:<span id="sTot">0</span></div>
+      <div class="chip">QL:<span id="sQL">0</span></div>
+      <div class="chip">Cheque:<span id="sCh">0</span></div>
     </div>
-    <button class="btn-submit" id="submitBtn" onclick="submitData()">SUBMIT DAY</button>
+    <button class="btn-submit" id="sbtn" onclick="submitDay()">SUBMIT DAY</button>
   </div>
 
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-const TEAM_CODE = 'VP';
-let SCRIPT_URL = '';
-let SHEET_ID = '';
+const TC = 'VP'; // TEAM CODE — do not change
+let URL_ = '', rid = 0;
 
-function loadConfig() {
-  SCRIPT_URL = localStorage.getItem('sip_script_url_' + TEAM_CODE) || '';
-  SHEET_ID = localStorage.getItem('sip_sheet_id_' + TEAM_CODE) || '';
-  if (SCRIPT_URL) {
-    document.getElementById('scriptUrlInput').value = SCRIPT_URL;
-    document.getElementById('sheetIdInput').value = SHEET_ID;
-    document.getElementById('setupBanner').style.display = 'none';
-    setSyncStatus('ok', '● Connected');
-  } else { setSyncStatus('err', '● Setup Required'); }
-}
-
-function saveConfig() {
-  SCRIPT_URL = document.getElementById('scriptUrlInput').value.trim();
-  SHEET_ID = document.getElementById('sheetIdInput').value.trim();
-  if (!SCRIPT_URL) { showToast('Please enter the Apps Script URL', 'error'); return; }
-  localStorage.setItem('sip_script_url_' + TEAM_CODE, SCRIPT_URL);
-  localStorage.setItem('sip_sheet_id_' + TEAM_CODE, SHEET_ID);
-  document.getElementById('setupBanner').style.display = 'none';
-  setSyncStatus('ok', '● Connected');
-  showToast('✓ Configuration saved!', 'success');
-}
-
-async function testConnection() {
-  if (!SCRIPT_URL) { showToast('Save config first', 'error'); return; }
-  setSyncStatus('loading', '● Testing...');
-  try {
-    const r = await fetch(SCRIPT_URL + '?action=ping&team=' + TEAM_CODE);
-    const d = await r.json();
-    if (d.status === 'ok') { setSyncStatus('ok', '● Connected'); showToast('✓ Connection successful!', 'success'); }
-    else { setSyncStatus('err', '● Error'); showToast('Connection failed: ' + (d.message||'unknown'), 'error'); }
-  } catch(e) { setSyncStatus('err', '● Failed'); showToast('Cannot reach script. Check URL.', 'error'); }
-}
-
-function initDate() {
+// ── CONFIG ───────────────────────────────────────────────────
+function init() {
+  URL_ = localStorage.getItem('sip_url_'+TC) || '';
+  document.getElementById('surl').value = URL_;
+  document.getElementById('sid').value  = localStorage.getItem('sip_sid_'+TC) || '';
+  if (URL_) { setSync('ok','● Connected'); document.getElementById('ncbar').style.display='none'; }
+  else      { setSync('err','● Not Connected'); document.getElementById('ncbar').style.display='flex'; }
   const today = new Date();
-  document.getElementById('todayDisplay').textContent = today.toLocaleDateString('en-IN', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-  document.getElementById('entryDate').valueAsDate = today;
+  document.getElementById('ddisp').textContent =
+    today.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('edate').valueAsDate = today;
+  for(let i=0;i<5;i++) addRow();
 }
 
-let rowId = 0;
+function saveC() {
+  const u = document.getElementById('surl').value.trim();
+  const s = document.getElementById('sid').value.trim();
+  if (!u) { toast('Please enter the Apps Script URL','error'); return; }
+  URL_ = u;
+  localStorage.setItem('sip_url_'+TC, u);
+  localStorage.setItem('sip_sid_'+TC, s);
+  document.getElementById('ncbar').style.display = 'none';
+  setSync('ok','● Connected');
+  closeS();
+  toast('✓ Settings saved & connected!','success');
+}
 
-function addRow(data) {
-  rowId++;
-  const tbody = document.getElementById('tableBody');
+async function testC() {
+  const u = document.getElementById('surl').value.trim();
+  if (!u) { toast('Enter URL first','error'); return; }
+  setSync('loading','● Testing…');
+  try {
+    const r = await fetch(u+'?action=ping&team='+TC);
+    const d = await r.json();
+    if (d.status==='ok') { setSync('ok','● Connected'); toast('✓ Connection successful!','success'); }
+    else { setSync('err','● Error'); toast('Script returned error: '+(d.message||'unknown'),'error'); }
+  } catch(e) { setSync('err','● Failed'); toast('Cannot reach script — check the URL','error'); }
+}
+
+function openS() {
+  document.getElementById('surl').value = URL_;
+  document.getElementById('sid').value  = localStorage.getItem('sip_sid_'+TC)||'';
+  document.getElementById('ov').classList.add('open');
+}
+function closeS() { document.getElementById('ov').classList.remove('open'); }
+
+// ── TABLE ────────────────────────────────────────────────────
+function addRow(d) {
+  rid++;
+  const tb = document.getElementById('tbody');
   const tr = document.createElement('tr');
-  tr.dataset.rid = rowId;
+  tr.dataset.rid = rid;
   tr.innerHTML = `
-    <td class="row-num">${tbody.rows.length + 1}</td>
-    <td class="join-date"><input class="cell-input" type="date" value="${data&&data.joiningDate||''}"></td>
-    <td><input class="cell-input code" type="text" placeholder="INT01" value="${data&&data.code||''}" style="width:80px"></td>
-    <td><input class="cell-input" type="text" placeholder="Intern Name" value="${data&&data.name||''}"></td>
-    <td style="width:70px">
-      <select class="att-select ${data&&data.att==='P'?'present':data&&data.att==='A'?'absent':''}" onchange="styleAtt(this);calcRow(this)">
-        <option value="" ${!data||!data.att?'selected':''}>—</option>
-        <option value="P" ${data&&data.att==='P'?'selected':''}>P</option>
-        <option value="A" ${data&&data.att==='A'?'selected':''}>A</option>
+    <td class="rn">${tb.rows.length+1}</td>
+    <td style="width:118px"><input class="ci" type="date" value="${d&&d.joiningDate||''}"></td>
+    <td><input class="ci code" type="text" placeholder="INT01" value="${d&&d.code||''}" style="width:78px"></td>
+    <td><input class="ci" type="text" placeholder="Intern Name" value="${d&&d.name||''}"></td>
+    <td style="width:66px">
+      <select class="att ${d&&d.att||''}" onchange="styleAtt(this);calcRow(this)">
+        <option value="">—</option>
+        <option value="P"${d&&d.att==='P'?' selected':''}>P</option>
+        <option value="A"${d&&d.att==='A'?' selected':''}>A</option>
       </select>
     </td>
-    <td><input class="num-input" type="number" min="0" value="${data&&data.toi2||0}" oninput="calcRow(this)"></td>
-    <td><input class="num-input" type="number" min="0" value="${data&&data.toi1||0}" oninput="calcRow(this)"></td>
-    <td><input class="num-input" type="number" min="0" value="${data&&data.et||0}" oninput="calcRow(this)"></td>
-    <td class="total-cell" id="total_${rowId}">${data?(+data.toi2||0)+(+data.toi1||0)+(+data.et||0):0}</td>
-    <td><input class="num-input" type="number" min="0" value="${data&&data.ql||0}"></td>
-    <td><input class="num-input" type="number" min="0" value="${data&&data.cheque||0}"></td>
-    <td><button onclick="removeRow(this)" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:18px;padding:4px 8px;line-height:1;" title="Remove">×</button></td>
+    <td><input class="ni" type="number" min="0" value="${d&&d.toi2||0}" oninput="calcRow(this)"></td>
+    <td><input class="ni" type="number" min="0" value="${d&&d.toi1||0}" oninput="calcRow(this)"></td>
+    <td><input class="ni" type="number" min="0" value="${d&&d.et||0}"   oninput="calcRow(this)"></td>
+    <td class="tc" id="tc${rid}">${d?(+d.toi2||0)+(+d.toi1||0)+(+d.et||0):0}</td>
+    <td><input class="ni" type="number" min="0" value="${d&&d.ql||0}"></td>
+    <td><input class="ni" type="number" min="0" value="${d&&d.cheque||0}"></td>
+    <td><button onclick="this.closest('tr').remove();renum();summ()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:18px;padding:3px 7px">×</button></td>
   `;
-  tbody.appendChild(tr);
-  updateRowNumbers();
-  updateSummary();
+  tb.appendChild(tr);
+  renum(); summ();
 }
 
-function removeRow(btn) { btn.closest('tr').remove(); updateRowNumbers(); updateSummary(); }
-
-function updateRowNumbers() {
-  const rows = document.querySelectorAll('#tableBody tr');
-  rows.forEach((tr, i) => { tr.querySelector('.row-num').textContent = i + 1; });
-  document.getElementById('rowCountLabel').textContent = rows.length + ' intern' + (rows.length !== 1 ? 's' : '');
+function renum() {
+  document.querySelectorAll('#tbody tr').forEach((tr,i)=>tr.querySelector('.rn').textContent=i+1);
+  const n=document.querySelectorAll('#tbody tr').length;
+  document.getElementById('rcnt').textContent=n+' intern'+(n!==1?'s':'');
 }
 
-function styleAtt(sel) {
-  sel.className = 'att-select';
-  if (sel.value === 'P') sel.classList.add('present');
-  else if (sel.value === 'A') sel.classList.add('absent');
+function styleAtt(s) {
+  s.className='att'; if(s.value) s.classList.add(s.value);
 }
 
-function calcRow(input) {
-  const tr = input.closest('tr');
-  const rid = tr.dataset.rid;
-  const nums = tr.querySelectorAll('.num-input');
-  document.getElementById('total_' + rid).textContent = (parseInt(nums[0].value)||0)+(parseInt(nums[1].value)||0)+(parseInt(nums[2].value)||0);
-  updateSummary();
+function calcRow(el) {
+  const tr=el.closest('tr'),n=tr.querySelectorAll('.ni');
+  document.getElementById('tc'+tr.dataset.rid).textContent=
+    (parseInt(n[0].value)||0)+(parseInt(n[1].value)||0)+(parseInt(n[2].value)||0);
+  summ();
 }
 
-function updateSummary() {
-  const rows = document.querySelectorAll('#tableBody tr');
-  let present=0,toi2=0,toi1=0,et=0,total=0,ql=0,cheque=0;
-  rows.forEach(tr => {
-    if (tr.querySelector('.att-select').value === 'P') present++;
-    const nums = tr.querySelectorAll('.num-input');
-    const t2=parseInt(nums[0].value)||0, t1=parseInt(nums[1].value)||0, e=parseInt(nums[2].value)||0;
-    toi2+=t2; toi1+=t1; et+=e; total+=t2+t1+e;
-    ql+=parseInt(nums[3].value)||0; cheque+=parseInt(nums[4].value)||0;
+function summ() {
+  let P=0,t2=0,t1=0,e=0,tot=0,ql=0,ch=0;
+  document.querySelectorAll('#tbody tr').forEach(tr=>{
+    if(tr.querySelector('.att').value==='P') P++;
+    const n=tr.querySelectorAll('.ni');
+    const a=parseInt(n[0].value)||0,b=parseInt(n[1].value)||0,c=parseInt(n[2].value)||0;
+    t2+=a;t1+=b;e+=c;tot+=a+b+c;ql+=parseInt(n[3].value)||0;ch+=parseInt(n[4].value)||0;
   });
-  document.getElementById('sumPresent').textContent=present;
-  document.getElementById('sumTOI2').textContent=toi2;
-  document.getElementById('sumTOI1').textContent=toi1;
-  document.getElementById('sumET').textContent=et;
-  document.getElementById('sumTotal').textContent=total;
-  document.getElementById('sumQL').textContent=ql;
-  document.getElementById('sumCheque').textContent=cheque;
+  document.getElementById('sP').textContent=P;
+  document.getElementById('sT2').textContent=t2;
+  document.getElementById('sT1').textContent=t1;
+  document.getElementById('sE').textContent=e;
+  document.getElementById('sTot').textContent=tot;
+  document.getElementById('sQL').textContent=ql;
+  document.getElementById('sCh').textContent=ch;
 }
 
-async function submitData() {
-  if (!SCRIPT_URL) { showToast('Please configure the Apps Script URL first', 'error'); return; }
-  const entryDate = document.getElementById('entryDate').value;
-  if (!entryDate) { showToast('Please select an entry date', 'error'); return; }
-  const rows = document.querySelectorAll('#tableBody tr');
-  if (rows.length === 0) { showToast('No rows to submit', 'error'); return; }
-  const records = [];
-  let hasError = false;
-  rows.forEach((tr, idx) => {
-    const inputs = tr.querySelectorAll('.cell-input');
-    const code = inputs[1].value.trim();
-    const name = inputs[2].value.trim();
-    if (!code) { showToast(`Row ${idx+1}: Intern Code is required`, 'error'); hasError=true; return; }
-    if (!name) { showToast(`Row ${idx+1}: Name is required`, 'error'); hasError=true; return; }
-    const nums = tr.querySelectorAll('.num-input');
-    records.push({ entryDate, team: TEAM_CODE, joiningDate: inputs[0].value, code, name,
-      att: tr.querySelector('.att-select').value,
-      toi2: parseInt(nums[0].value)||0, toi1: parseInt(nums[1].value)||0, et: parseInt(nums[2].value)||0,
-      ql: parseInt(nums[3].value)||0, cheque: parseInt(nums[4].value)||0 });
+// ── SUBMIT ───────────────────────────────────────────────────
+async function submitDay() {
+  if (!URL_) { openS(); toast('Connect to Google Sheets first','error'); return; }
+  const dt = document.getElementById('edate').value;
+  if (!dt) { toast('Select a date','error'); return; }
+  const rows = document.querySelectorAll('#tbody tr');
+  if (!rows.length) { toast('Add at least one row','error'); return; }
+  const recs=[]; let err=false;
+  rows.forEach((tr,i)=>{
+    const inp=tr.querySelectorAll('.ci');
+    const code=inp[1].value.trim(), name=inp[2].value.trim();
+    if(!code){toast('Row '+(i+1)+': Intern Code required','error');err=true;return;}
+    if(!name){toast('Row '+(i+1)+': Name required','error');err=true;return;}
+    const n=tr.querySelectorAll('.ni');
+    recs.push({entryDate:dt,team:TC,joiningDate:inp[0].value,code,name,
+      att:tr.querySelector('.att').value,
+      toi2:parseInt(n[0].value)||0,toi1:parseInt(n[1].value)||0,et:parseInt(n[2].value)||0,
+      ql:parseInt(n[3].value)||0,cheque:parseInt(n[4].value)||0});
   });
-  if (hasError) return;
-  const btn = document.getElementById('submitBtn');
-  btn.disabled=true; btn.textContent='SUBMITTING...';
-  setSyncStatus('loading', '● Saving...');
+  if(err) return;
+  const btn=document.getElementById('sbtn');
+  btn.disabled=true; btn.textContent='SUBMITTING…'; setSync('loading','● Saving…');
   try {
-    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'submit', records}) });
-    setSyncStatus('ok', '● Saved ✓');
-    showToast(`✓ ${records.length} record(s) submitted`, 'success');
-  } catch(e) { setSyncStatus('err', '● Error'); showToast('Submit failed. Check connection.', 'error'); }
+    await fetch(URL_,{method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'submit',records:recs})});
+    setSync('ok','● Saved ✓');
+    toast('✓ '+recs.length+' record(s) submitted','success');
+  } catch(e) {
+    setSync('err','● Error'); toast('Submit failed — check connection','error');
+  }
   btn.textContent='SUBMIT DAY'; btn.disabled=false;
 }
 
-async function loadExistingEntries() {
-  if (!SCRIPT_URL) { showToast('Configure connection first', 'error'); return; }
-  const entryDate = document.getElementById('entryDate').value;
-  if (!entryDate) { showToast('Select a date first', 'error'); return; }
-  document.getElementById('loadBtn').textContent='Loading...';
-  setSyncStatus('loading', '● Loading...');
+// ── LOAD EXISTING ────────────────────────────────────────────
+async function loadExisting() {
+  if (!URL_) { openS(); return; }
+  const dt = document.getElementById('edate').value;
+  if (!dt) { toast('Select a date first','error'); return; }
+  const lb=document.getElementById('lbtn');
+  lb.textContent='Loading…'; setSync('loading','● Loading…');
   try {
-    const r = await fetch(`${SCRIPT_URL}?action=load&team=${TEAM_CODE}&date=${entryDate}`);
+    const r = await fetch(URL_+'?action=load&team='+TC+'&date='+dt);
     const d = await r.json();
-    if (d.records && d.records.length > 0) {
-      document.getElementById('tableBody').innerHTML=''; rowId=0;
-      d.records.forEach(rec => addRow(rec));
-      showToast(`Loaded ${d.records.length} record(s)`, 'success');
-      setSyncStatus('ok', '● Loaded');
-    } else { showToast('No records for this date', 'success'); setSyncStatus('ok', '● Connected'); }
-  } catch(e) { showToast('Could not load entries', 'error'); setSyncStatus('err', '● Error'); }
-  document.getElementById('loadBtn').textContent='↻ Load Existing';
+    if (d.records && d.records.length) {
+      document.getElementById('tbody').innerHTML=''; rid=0;
+      d.records.forEach(rec=>addRow(rec));
+      toast('Loaded '+d.records.length+' record(s)','success');
+      setSync('ok','● Loaded');
+    } else { toast('No records for this date','success'); setSync('ok','● Connected'); }
+  } catch(e) {
+    // JSONP fallback for load
+    loadExistingJSONP(dt);
+  }
+  lb.textContent='↻ Load Existing';
 }
 
-function setSyncStatus(type, msg) {
-  const el = document.getElementById('syncStatus');
-  el.className = 'sync-status sync-' + type;
-  el.textContent = msg;
+function loadExistingJSONP(dt) {
+  window.__loadCB = function(data) {
+    if (data && data.records && data.records.length) {
+      document.getElementById('tbody').innerHTML=''; rid=0;
+      data.records.forEach(rec=>addRow(rec));
+      toast('Loaded '+data.records.length+' record(s)','success');
+      setSync('ok','● Loaded');
+    } else { toast('No records for this date','success'); setSync('ok','● Connected'); }
+    const s=document.getElementById('_ls'); if(s) s.remove();
+  };
+  const old=document.getElementById('_ls'); if(old) old.remove();
+  const s=document.createElement('script');
+  s.id='_ls';
+  s.src=URL_+'?action=load&team='+TC+'&date='+dt+'&callback=__loadCB';
+  s.onerror=()=>{ toast('Could not load — check URL','error'); setSync('err','● Error'); s.remove(); };
+  document.head.appendChild(s);
 }
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
+
+// ── HELPERS ──────────────────────────────────────────────────
+function setSync(type,msg){
+  const el=document.getElementById('sync');
+  el.className='sync-dot sync-'+type; el.textContent=msg;
+}
+function toast(msg,type){
+  const t=document.getElementById('toast');
   t.textContent=msg; t.className='toast '+type; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 4000);
+  setTimeout(()=>t.classList.remove('show'),4000);
 }
 
-loadConfig(); initDate();
-for (let i = 0; i < 5; i++) addRow();
+// ── PRE-CONFIGURED — no manual setup needed
+localStorage.setItem('sip_url_VP', 'https://script.google.com/macros/s/AKfycbwpBXqazikdI71ZmeFrmpY8JA_SIM3dMFh_k1TURne9IVqvy-J_vtrvFC0JWU3c6XZuwg/exec');
+localStorage.setItem('sip_sid_VP', '1vTORmaIxS6myKa-DYkRMXkd4FB5sFwX0e2frVwuKAH8');
+init();
 </script>
 </body>
 </html>
